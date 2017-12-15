@@ -128,7 +128,7 @@ namespace SubjectNerd.PsdImporter
 		private readonly GUIContent labelScale = new GUIContent("Default Scale");
 		private readonly GUIContent labelPath = new GUIContent("Import Folder");
 		private readonly GUIContent labelPickPath = new GUIContent("Open");
-		//private readonly GUIContent labelAutoImport = new GUIContent("Auto Import");
+		private readonly GUIContent labelGenerateSpriteMesh = new GUIContent("Generate Anima2D's Sprite Mesh");
 		private readonly GUIContent labelUseConstructor = new GUIContent("Reconstructor");
 		private readonly GUIContent labelSelConstructor = new GUIContent("Construct As");
 		private readonly GUIContent labelDocAlign = new GUIContent("Document Alignment");
@@ -966,7 +966,7 @@ namespace SubjectNerd.PsdImporter
 			}
 
 			importSettings.ScaleFactor = (ScaleFactor)EditorGUILayout.EnumPopup(labelScale, importSettings.ScaleFactor);
-			//importSettings.AutoImport = EditorGUILayout.Toggle(labelAutoImport, importSettings.AutoImport);
+			importSettings.GenerateSpriteMesh = EditorGUILayout.Toggle(labelGenerateSpriteMesh, importSettings.GenerateSpriteMesh);
 
 			if (EditorGUI.EndChangeCheck())
 			{

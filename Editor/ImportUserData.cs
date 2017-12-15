@@ -105,6 +105,7 @@ namespace SubjectNerd.PsdImporter
 		public string PackingTag;
 		public string TargetDirectory;
 		public bool AutoImport;
+		public bool GenerateSpriteMesh;
 		public SpriteAlignment DefaultAlignment = SpriteAlignment.Center;
 		public Vector2 DefaultPivot = new Vector2(0.5f, 0.5f);
 		public ScaleFactor ScaleFactor = ScaleFactor.Full;

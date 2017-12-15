@@ -24,6 +24,7 @@ SOFTWARE.
 
 using System.Collections.Generic;
 using UnityEngine;
+using Anima2D;
 
 namespace SubjectNerd.PsdImporter.Reconstructor
 {
@@ -33,6 +34,10 @@ namespace SubjectNerd.PsdImporter.Reconstructor
 		/// Sprite that corresponds to the layer indexId
 		/// </summary>
 		public Dictionary<int[], Sprite> spriteIndex;
+		/// <summary>
+		/// SpriteMesh that corresponds to the layer indexId
+		/// </summary>
+		public Dictionary<int[], SpriteMesh> spriteMeshIndex;
 		/// <summary>
 		/// Anchor information that corresponds to the layer indexId.
 		/// Ratio of the Sprite size
@@ -59,6 +64,7 @@ namespace SubjectNerd.PsdImporter.Reconstructor
 		public ReconstructData(Vector2 docSize, Vector2 docPivot, float PPU)
 		{
 			spriteIndex = new Dictionary<int[], Sprite>();
+			spriteMeshIndex = new Dictionary<int[], SpriteMesh>();
 			spriteAnchors = new Dictionary<int[], Vector2>();
 			layerBoundsIndex = new Dictionary<int[], Rect>();
 			documentPivot = docPivot;
@@ -70,6 +76,10 @@ namespace SubjectNerd.PsdImporter.Reconstructor
 		{
 			spriteIndex.Add(layerIdx, sprite);
 			spriteAnchors.Add(layerIdx, anchor);
+		}
+
+		public void AddSpriteMesh(int[] layerIdx, SpriteMesh spriteMesh) {
+			spriteMeshIndex.Add(layerIdx, spriteMesh);
 		}
 	}
 

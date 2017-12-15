@@ -32,6 +32,7 @@ using SubjectNerd.PsdImporter.Reconstructor;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Anima2D;
 
 namespace SubjectNerd.PsdImporter
 {
@@ -350,6 +351,10 @@ namespace SubjectNerd.PsdImporter
 						layerCallback(importCurrent, layerSettings);
 
 					var sprite = ImportLayer(psd, importSettings, layerSettings, psdUnityImport);
+
+					if (importSettings.GenerateSpriteMesh)
+						GenerateSpriteMesh(sprite);
+
 					sprites.Add(sprite);
 					importCurrent++;
 
@@ -377,7 +382,21 @@ namespace SubjectNerd.PsdImporter
 
 			// Save the texture as an asset
 			Sprite layerSprite = SaveAsset(psdLayer, psdUnityImport, layerTexture, importSettings, layerSettings);
+
 			return layerSprite;
+		}
+
+		private static SpriteMesh GenerateSpriteMesh(Sprite sprite) {
+			SpriteMesh spriteMesh = SpriteMeshUtils.CreateSpriteMesh(sprite);
+
+			SpriteMeshInstance spriteMeshInstance = SpriteMeshUtils.CreateSpriteMeshInstance(spriteMesh, Selection.activeGameObject, true);
+
+			SpriteMeshCache spriteMeshCache = ScriptableObject.CreateInstance<SpriteMeshCache>();
+			spriteMeshCache.SetSpriteMesh(spriteMesh, spriteMeshInstance);
+			spriteMeshCache.InitFromOutline(0.25f, 0.05f, true, 0.1f, "set outline");
+			spriteMeshCache.ApplyChanges();
+
+			return spriteMesh;
 		}
 
 		private static Sprite SaveAsset(PsdLayer psdLayer, TextureImporterSettings psdUnityImport,
@@ -385,7 +404,7 @@ namespace SubjectNerd.PsdImporter
 		{
 			// Generate the file path for this layer
 			string fileDir;
-			string filepath = GetFilePath(psdLayer, importSettings, out fileDir);
+			string filepath = GetFilePath(psdLayer, importSettings, "png", out fileDir);
 
 			// Create the folder if non existent
 			if (AssetDatabase.IsValidFolder(fileDir) == false)
@@ -448,9 +467,9 @@ namespace SubjectNerd.PsdImporter
 			return (Sprite)AssetDatabase.LoadAssetAtPath(filepath, typeof(Sprite));
 		}
 
-		public static string GetFilePath(PsdLayer layer, ImportUserData importSettings, out string dir)
+		public static string GetFilePath(PsdLayer layer, ImportUserData importSettings, string format, out string dir)
 		{
-			string filename = string.Format("{0}.png", layer.Name);
+			string filename = string.Format("{0}.{1}", layer.Name, format);
 
 			string folder = "";
 
@@ -536,11 +555,21 @@ namespace SubjectNerd.PsdImporter
 					data.layerBoundsIndex.Add(layer.indexId, layerBounds);
 
 					string layerDir;
-					string layerPath = GetFilePath(psdLayer, importSettings, out layerDir);
-					Sprite layerSprite = AssetDatabase.LoadAssetAtPath<Sprite>(layerPath);
+					string layerPath     = GetFilePath(psdLayer, importSettings, "png", out layerDir);
 
-					if (layerSprite == null)
+					string layerMeshDir;
+					string layerMeshPath = GetFilePath(psdLayer, importSettings, "asset", out layerMeshDir);
+
+					Sprite     layerSprite     = AssetDatabase.LoadAssetAtPath<Sprite>(layerPath);
+					SpriteMesh layerSpriteMesh = AssetDatabase.LoadAssetAtPath<SpriteMesh>(layerMeshPath);
+
+					if (layerSprite == null) {
 						layerSprite = ImportLayer(psdDoc, importSettings, layer, psdUnityImport);
+					}
+
+					if (layerSpriteMesh == null && importSettings.GenerateSpriteMesh) {
+						layerSpriteMesh = GenerateSpriteMesh(layerSprite);
+					}
 
 					Vector2 spriteAnchor = Vector2.zero;
 
@@ -555,7 +584,11 @@ namespace SubjectNerd.PsdImporter
 						else
 							spriteAnchor = AlignmentToPivot((SpriteAlignment) layerSettings.spriteAlignment);
 					}
+
 					data.AddSprite(layer.indexId, layerSprite, spriteAnchor);
+
+					if (importSettings.GenerateSpriteMesh)
+						data.AddSpriteMesh(layer.indexId, layerSpriteMesh);
 				},
 				canEnterGroup: checkGroup => checkGroup.import
 			);
